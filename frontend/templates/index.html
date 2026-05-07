@@ -1,0 +1,2147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FairMind AI — Bias Detection Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --blue: #1A73E8;
+  --blue-light: #E8F0FE;
+  --dark: #1a1a2e;
+  --dark2: #16213e;
+  --green: #1E8E3E;
+  --orange: #E37400;
+  --red: #D93025;
+  --grey: #5F6368;
+  --border: #DADCE0;
+  --bg: #F8F9FA;
+  --white: #FFFFFF;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Google Sans', 'Segoe UI', sans-serif; background: var(--bg); color: #202124; }
+
+/* NAV */
+nav {
+  background: var(--dark);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.logo { color: white; font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.logo-icon { background: var(--blue); width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+.nav-badge { background: var(--blue); color: white; font-size: 0.7rem; padding: 2px 8px;
+  border-radius: 20px; margin-left: 1rem; font-weight: 500; }
+
+/* LAYOUT */
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+@media(max-width:768px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+/* CARDS */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-heading {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 2rem 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 100%);
+  border-radius: var(--radius);
+  padding: 3rem 2rem;
+  color: white;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.hero h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.75rem; }
+.hero p { font-size: 1.05rem; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto 1.5rem; }
+.hero-tags { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.hero-tag { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+  color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.82rem; }
+
+/* STEPS */
+.steps { display: flex; gap: 0; margin-bottom: 2rem; background: white;
+  border-radius: var(--radius); padding: 0.5rem; box-shadow: var(--shadow);
+  border: 1px solid var(--border); overflow-x: auto; }
+.step { flex: 1; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer;
+  text-align: center; transition: all 0.2s; min-width: 120px;
+  color: var(--grey); font-size: 0.85rem; font-weight: 500; }
+.step.active { background: var(--blue); color: white; }
+.step-num { font-size: 1.1rem; margin-bottom: 2px; }
+
+/* BUTTONS */
+.btn {
+  padding: 0.65rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-primary { background: var(--blue); color: white; }
+.btn-primary:hover { background: #1557b0; transform: translateY(-1px); }
+.btn-success { background: var(--green); color: white; }
+.btn-outline { background: white; color: var(--blue); border: 2px solid var(--blue); }
+.btn-outline:hover { background: var(--blue-light); }
+.btn-sm { padding: 0.4rem 1rem; font-size: 0.8rem; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* FORMS */
+.form-group { margin-bottom: 1rem; }
+label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--grey);
+  margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
+select, input[type=text] {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: white;
+  color: #202124;
+  outline: none;
+  transition: border-color 0.2s;
+}
+select:focus, input:focus { border-color: var(--blue); }
+select[multiple] { height: 120px; }
+
+/* UPLOAD ZONE */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg);
+}
+.upload-zone:hover { border-color: var(--blue); background: var(--blue-light); }
+.upload-zone.dragover { border-color: var(--blue); background: var(--blue-light); }
+.upload-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.upload-zone p { color: var(--grey); font-size: 0.9rem; }
+.upload-zone strong { color: var(--blue); }
+#file-input { display: none; }
+
+/* METRIC CARDS */
+.metric-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.metric-value { font-size: 2rem; font-weight: 800; margin: 0.3rem 0; }
+.metric-label { font-size: 0.78rem; color: var(--grey); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; }
+.metric-sub { font-size: 0.75rem; color: var(--grey); margin-top: 4px; }
+.metric-pass { color: var(--green); }
+.metric-warn { color: var(--orange); }
+.metric-fail { color: var(--red); }
+
+/* SEVERITY BANNER */
+.severity-banner {
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.severity-banner .score { font-size: 3rem; font-weight: 900; }
+.severity-banner .info h3 { font-size: 1.1rem; font-weight: 700; }
+.severity-banner .info p { font-size: 0.88rem; opacity: 0.85; }
+.sev-low { background: #E6F4EA; color: #1E8E3E; }
+.sev-medium { background: #FEF7E0; color: #E37400; }
+.sev-high { background: #FCE8E6; color: #D93025; }
+.sev-critical { background: #FCE8E6; color: #9C0006; border: 2px solid #D93025; }
+
+/* INTERSECTIONAL TABLE */
+.inter-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.inter-table th { background: var(--dark); color: white; padding: 10px 12px;
+  text-align: left; font-weight: 600; }
+.inter-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+.inter-table tr:nth-child(even) td { background: var(--bg); }
+.inter-table tr:hover td { background: var(--blue-light); }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 20px;
+  font-size: 0.75rem; font-weight: 600; }
+.badge-pass { background: #E6F4EA; color: var(--green); }
+.badge-warn { background: #FEF7E0; color: var(--orange); }
+.badge-fail { background: #FCE8E6; color: var(--red); }
+
+/* EXPLANATION BOX */
+.explanation-box {
+  background: var(--dark);
+  color: #e8eaed;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* DEMO CARDS */
+.demo-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.demo-card:hover { border-color: var(--blue); box-shadow: 0 4px 16px rgba(26,115,232,0.15); }
+.demo-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem; }
+.demo-card p { font-size: 0.8rem; color: var(--grey); line-height: 1.5; }
+.demo-tags { display: flex; gap: 6px; margin-top: 0.75rem; flex-wrap: wrap; }
+.demo-tag { background: var(--blue-light); color: var(--blue); padding: 2px 10px;
+  border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+
+/* LOADER */
+.loader-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(26,26,46,0.7);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.loader-overlay.show { display: flex; }
+.spinner {
+  width: 60px; height: 60px;
+  border: 5px solid rgba(255,255,255,0.2);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text { color: white; font-size: 1rem; font-weight: 600; }
+
+/* ALERT */
+.alert { padding: 0.9rem 1.2rem; border-radius: 8px; margin-bottom: 1rem;
+  font-size: 0.88rem; font-weight: 500; }
+.alert-error { background: #FCE8E6; color: #D93025; border: 1px solid #F5C6C3; }
+.alert-success { background: #E6F4EA; color: var(--green); border: 1px solid #C6E9CC; }
+.alert-info { background: var(--blue-light); color: var(--blue); border: 1px solid #BBDEFB; }
+
+/* TABS */
+.tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; }
+.tab { padding: 0.65rem 1.25rem; cursor: pointer; font-size: 0.88rem; font-weight: 600;
+  color: var(--grey); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; }
+.tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+/* CHART CONTAINERS */
+.chart-wrap { position: relative; height: 260px; }
+
+/* PREVIEW TABLE */
+.preview-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; overflow-x: auto; }
+.preview-table th { background: var(--dark); color: white; padding: 8px 10px; text-align: left; }
+.preview-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+.preview-table tr:nth-child(even) td { background: var(--bg); }
+.table-scroll { overflow-x: auto; border-radius: 8px; }
+
+/* UTIL */
+.hidden { display: none !important; }
+.flex { display: flex; align-items: center; gap: 10px; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.text-grey { color: var(--grey); }
+.text-sm { font-size: 0.82rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mt-2 { margin-top: 1rem; }
+.gap-1 { gap: 0.5rem; }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 700; background: var(--blue-light); color: var(--blue); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">🧠</div>
+    FairMind AI
+    <span class="nav-badge">v1.1 — Solution Challenge 2026</span>
+  </div>
+</nav>
+
+<!-- LOADER -->
+<div class="loader-overlay" id="loader">
+  <div class="spinner"></div>
+  <div class="loader-text" id="loader-text">Analysing bias patterns…</div>
+</div>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>🧠 FairMind AI</h1>
+    <p>The world's first open-source <strong>intersectional bias detection</strong> platform.
+       Audit any AI dataset or model in under 3 minutes. No paid APIs.</p>
+    <div class="hero-tags">
+      <span class="hero-tag">✅ 12+ Fairness Metrics</span>
+      <span class="hero-tag">★ Intersectional Analysis</span>
+      <span class="hero-tag">🔍 Counterfactual Probes</span>
+      <span class="hero-tag">📄 Compliance Reports</span>
+      <span class="hero-tag">100% Free &amp; Open Source</span>
+    </div>
+  </div>
+
+  <!-- STEP BAR -->
+  <div class="steps">
+    <div class="step active" id="step-tab-1" onclick="showStep(1)">
+      <div class="step-num">①</div>Upload Data
+    </div>
+    <div class="step" id="step-tab-2" onclick="showStep(2)">
+      <div class="step-num">②</div>Configure
+    </div>
+    <div class="step" id="step-tab-3" onclick="showStep(3)">
+      <div class="step-num">③</div>Audit Results
+    </div>
+    <div class="step" id="step-tab-4" onclick="showStep(4)">
+      <div class="step-num">④</div>Mitigation
+    </div>
+    <div class="step" id="step-tab-5" onclick="showStep(5)">
+      <div class="step-num">⑤</div>Report
+    </div>
+    <div class="step" id="step-tab-6" onclick="showStep(6)" style="background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);color:#7ee8fa;border-radius:8px;font-weight:700;">
+      <div class="step-num" style="color:#7ee8fa;">⑥</div>⏱ Drift
+    </div>
+    <div class="step" id="step-tab-7" onclick="showStep(7)" style="background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#e94560;border-radius:8px;font-weight:700;">
+      <div class="step-num" style="color:#e94560;">⑦</div>📜 History
+    </div>
+  </div>
+
+  <!-- STEP 1: UPLOAD -->
+  <div id="step-1">
+    <div class="section-heading">📂 Step 1: Load Your Dataset</div>
+
+    <!-- Demo datasets -->
+    <div class="card mb-2">
+      <div class="card-title">⚡ Quick Start — Try a Demo Dataset</div>
+      <div class="grid-3" id="demo-cards"></div>
+    </div>
+
+    <div style="text-align:center;color:var(--grey);margin:0.5rem 0;font-size:0.9rem;font-weight:600;">
+      — OR UPLOAD YOUR OWN CSV —
+    </div>
+
+    <div class="card">
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <div class="upload-icon">📁</div>
+        <p><strong>Click to upload</strong> or drag &amp; drop</p>
+        <p>CSV files only. Up to 5MB.</p>
+        <input type="file" id="file-input" accept=".csv" onchange="handleFileUpload(event)"/>
+      </div>
+      <div id="upload-result" class="hidden mt-2"></div>
+    </div>
+  </div>
+
+  <!-- STEP 2: CONFIGURE -->
+  <div id="step-2" class="hidden">
+    <div class="section-heading">⚙️ Step 2: Configure Your Audit</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🗂️ Dataset Preview</div>
+        <div id="preview-info" class="text-grey text-sm mb-2"></div>
+        <div class="table-scroll">
+          <table class="preview-table" id="preview-table"></table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎛️ Audit Settings</div>
+        <div class="form-group">
+          <label>Protected Attributes ★ (hold Ctrl/Cmd for multiple)</label>
+          <select id="protected-attrs" multiple></select>
+          <div class="text-sm text-grey mt-1">
+            e.g. gender, race, age_group — attributes the model should not discriminate on
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Prediction / Outcome Column</label>
+          <select id="y-pred-col"></select>
+        </div>
+        <div class="form-group">
+          <label>Ground Truth Column (optional)</label>
+          <select id="y-true-col">
+            <option value="">— None —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Domain Context</label>
+          <select id="domain">
+            <option value="general">General</option>
+            <option value="hiring">Hiring / Recruitment</option>
+            <option value="lending">Lending / Credit</option>
+            <option value="healthcare">Healthcare</option>
+            <option value="criminal_justice">Criminal Justice</option>
+            <option value="education">Education</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Positive Label Value</label>
+          <select id="pos-label">
+            <option value="1">1 (default)</option>
+            <option value="0">0</option>
+          </select>
+        </div>
+        <div id="suggestions-box" class="hidden alert alert-info mb-2"></div>
+        <button class="btn btn-primary" onclick="runAudit()" id="run-btn">
+          🔍 Run Bias Audit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: RESULTS -->
+  <div id="step-3" class="hidden">
+    <div class="flex-between mb-2">
+      <div class="section-heading" style="margin:0">📊 Audit Results</div>
+      <div class="flex gap-1">
+        <button class="btn btn-outline btn-sm" onclick="showStep(2)">← Reconfigure</button>
+        <button class="btn btn-primary btn-sm" onclick="showStep(4)">Mitigate Bias →</button>
+      </div>
+    </div>
+
+    <!-- Severity banner -->
+    <div id="severity-banner"></div>
+
+    <!-- Metric summary -->
+    <div class="grid-3 mb-2" id="metric-cards"></div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('tab-metrics')">📈 Metrics</div>
+      <div class="tab" onclick="showTab('tab-intersectional')">★ Intersectional</div>
+      <div class="tab" onclick="showTab('tab-charts')">📊 Charts</div>
+      <div class="tab" onclick="showTab('tab-explain')">💬 Explanation</div>
+      <div class="tab" onclick="showTab('tab-counterfactual')">🔄 Counterfactual</div>
+      <div class="tab" onclick="showTab('tab-scorecard'); loadScorecard();" style="color:#e94560;font-weight:700;">⚖️ Reg. Scorecard</div>
+    </div>
+
+    <!-- Tab: Metrics -->
+    <div id="tab-metrics">
+      <div id="metrics-detail"></div>
+    </div>
+
+    <!-- Tab: Intersectional ★ -->
+    <div id="tab-intersectional" class="hidden">
+      <div class="card">
+        <div class="card-title">★ Intersectional Bias Analysis — Multi-Attribute Combinations</div>
+        <div class="alert alert-info mb-2">
+          Standard tools check one attribute at a time. FairMind AI checks <strong>all combinations</strong>
+          of your protected attributes to find compounding discrimination that single-attribute tools miss.
+        </div>
+        <div class="table-scroll">
+          <table class="inter-table" id="inter-table">
+            <thead>
+              <tr>
+                <th>Intersectional Group</th>
+                <th>Type</th>
+                <th>Group Size</th>
+                <th>Positive Rate</th>
+                <th>vs Average</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="inter-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Charts -->
+    <div id="tab-charts" class="hidden">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Positive Rate by Group</div>
+          <div class="chart-wrap"><canvas id="chart-rates"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Fairness Metrics Overview</div>
+          <div class="chart-wrap"><canvas id="chart-metrics"></canvas></div>
+        </div>
+      </div>
+      <div class="card mt-2">
+        <div class="card-title">Intersectional Disparity Heatmap</div>
+        <div id="heatmap-container" style="overflow-x:auto;"></div>
+      </div>
+    </div>
+
+    <!-- Tab: Explanation -->
+    <div id="tab-explain" class="hidden">
+      <div class="card">
+        <div class="card-title">💬 Plain-Language Bias Explanation (AI-Generated)</div>
+        <div class="explanation-box" id="explanation-box"></div>
+      </div>
+    </div>
+
+    <!-- Tab: Counterfactual -->
+    <div id="tab-counterfactual" class="hidden">
+      <div class="card">
+        <div class="card-title">🔄 Counterfactual Fairness Analysis</div>
+        <div class="alert alert-info mb-2">
+          Counterfactual fairness asks: <em>"If only this person's protected attribute changed
+          (everything else identical), would the model's decision change?"</em>
+          High flip rate = the attribute directly drives predictions.
+        </div>
+        <div id="cf-results"></div>
+      </div>
+    </div>
+
+    <!-- Tab: Regulatory Scorecard ★ NEW FEATURE 2 -->
+    <div id="tab-scorecard" class="hidden">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+          <span style="font-size:1.6rem;">⚖️</span>
+          <div>
+            <div style="font-weight:800;font-size:1.05rem;color:#0f2027;">Regulatory Compliance Scorecard</div>
+            <div style="font-size:0.78rem;color:#666;">Checks your audit results against 5 global AI fairness regulations in real time.</div>
+          </div>
+          <button onclick="loadScorecard()" style="margin-left:auto;background:#0f2027;color:white;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.8rem;">🔄 Refresh</button>
+        </div>
+        <div id="scorecard-summary" style="margin-bottom:1rem;"></div>
+        <div id="scorecard-cards"></div>
+        <div id="scorecard-loading" class="hidden" style="text-align:center;padding:2rem;color:#666;">
+          <div style="font-size:2rem;margin-bottom:0.5rem;">⚖️</div>
+          Checking compliance across regulations…
+        </div>
+        <div id="scorecard-placeholder" style="text-align:center;padding:2rem;color:#999;">
+          Run an audit first, then click this tab to see your compliance scorecard.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: MITIGATION -->
+  <div id="step-4" class="hidden">
+    <div class="section-heading">🔧 Step 4: Bias Mitigation</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Configure Mitigation</div>
+        <div class="form-group">
+          <label>Protected Attribute to Fix</label>
+          <select id="mit-attr"></select>
+        </div>
+        <div class="form-group">
+          <label>Prediction Column</label>
+          <select id="mit-pred"></select>
+        </div>
+        <div class="form-group">
+          <label>Mitigation Method</label>
+          <select id="mit-method">
+            <option value="threshold_adjustment">
+              Threshold Adjustment (post-processing, no retraining needed)
+            </option>
+          </select>
+        </div>
+        <div class="alert alert-info mb-2">
+          <strong>Threshold Adjustment:</strong> Finds group-specific decision thresholds
+          that equalise positive rates across groups. Works directly on predictions —
+          no model retraining required.
+        </div>
+        <button class="btn btn-success" onclick="runMitigation()">
+          ⚡ Apply Mitigation
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-title">Results</div>
+        <div id="mit-results">
+          <div class="text-grey text-sm">Configure and run mitigation to see before/after comparison.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: REPORT -->
+  <div id="step-5" class="hidden">
+    <div class="section-heading">📄 Step 5: Compliance Report</div>
+    <div class="card">
+      <div class="card-title">Download Audit Report</div>
+      <p class="text-grey text-sm mb-2">
+        Generate a professional PDF compliance report containing all audit findings,
+        intersectional analysis, plain-language explanation, and recommended actions.
+        Aligned with GDPR Article 22, EU AI Act, and US EEOC standards.
+      </p>
+      <div class="grid-3 mb-2">
+        <div class="metric-card">
+          <div class="metric-label">Includes</div>
+          <div style="font-size:1.5rem;margin:0.5rem 0;">📊</div>
+          <div class="text-sm">All fairness metrics with pass/fail status</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Includes</div>
+          <div style="font-size:1.5rem;margin:0.5rem 0;">★</div>
+          <div class="text-sm">Intersectional bias table (unique feature)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Includes</div>
+          <div style="font-size:1.5rem;margin:0.5rem 0;">💬</div>
+          <div class="text-sm">Plain-English summary and recommended actions</div>
+        </div>
+      </div>
+
+      <!-- Gemini AI enhancement -->
+      <div style="background:linear-gradient(135deg,#e8f0fe,#fce8ff);border:1px solid #4285F4;border-radius:10px;padding:1rem;margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+          <span style="font-size:1.2rem;">✦</span>
+          <span style="font-weight:800;color:#4285F4;font-size:0.9rem;">Powered by Google Gemini AI (Optional)</span>
+        </div>
+        <p style="font-size:0.8rem;color:#444;margin-bottom:0.7rem;line-height:1.5;">
+          Add your free Gemini API key to include an <strong>AI-generated Executive Summary</strong> inside the PDF — 
+          written by Google Gemini, tailored to your exact audit results. No key = standard report.
+        </p>
+        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+          <input id="report-gemini-key" type="password" placeholder="Paste Gemini API key (optional)…"
+            style="flex:1;min-width:200px;padding:8px 12px;border:1px solid #4285F4;border-radius:6px;font-size:0.85rem;outline:none;">
+          <a href="https://aistudio.google.com/app/apikey" target="_blank"
+            style="font-size:0.75rem;color:#4285F4;white-space:nowrap;">Get free key ↗</a>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="downloadReport()">
+        📥 Download PDF Report
+      </button>
+      <div id="report-msg" class="mt-2"></div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     STEP 6 — TEMPORAL BIAS DRIFT DETECTION  ★ NEW FEATURE
+     ══════════════════════════════════════════════════════════════════════ -->
+<div class="container">
+<div id="step-6" class="hidden">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.5rem;">
+    <div class="section-heading" style="margin:0;">⏱️ Step 6: Temporal Bias Drift Detection</div>
+    <span style="background:linear-gradient(135deg,#0f2027,#2c5364);color:#7ee8fa;padding:4px 14px;border-radius:20px;font-size:0.78rem;font-weight:700;letter-spacing:0.5px;">★ PAPER-LEVEL FEATURE</span>
+  </div>
+
+  <div class="card" style="border-left:4px solid #7ee8fa;background:linear-gradient(135deg,rgba(15,32,39,0.04),rgba(44,83,100,0.06));">
+    <div class="card-title" style="color:#0f2027;">🔬 What This Does</div>
+    <p class="text-grey text-sm" style="line-height:1.6;">
+      Standard bias audits are <strong>one-shot snapshots</strong>. But AI bias is not static — 
+      models become more discriminatory over time as real-world data drifts. 
+      This feature detects whether your model's bias is <strong>getting worse, improving, or stable</strong> 
+      across time periods. Directly addresses <strong>EU AI Act Article 9</strong> (continuous monitoring requirement).
+      No other free, no-code tool does this.
+    </p>
+  </div>
+
+  <div class="grid-2" style="margin-top:1rem;">
+
+    <!-- CONFIG PANEL -->
+    <div class="card">
+      <div class="card-title">⚙️ Configure Drift Analysis</div>
+
+      <div class="form-group">
+        <label class="form-label">Protected Attribute to Monitor ★</label>
+        <select id="drift-attr" class="form-control">
+          <option value="">— select protected attribute —</option>
+        </select>
+        <div class="text-grey text-sm mt-1">The sensitive attribute (e.g. race, gender) to track over time.</div>
+      </div>
+
+      <div class="form-group" style="margin-top:0.9rem;">
+        <label class="form-label">Prediction / Outcome Column ★</label>
+        <select id="drift-pred" class="form-control">
+          <option value="">— select prediction column —</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-top:0.9rem;">
+        <label class="form-label" id="drift-time-label">
+          📅 Time / Order Column ★
+          <span id="drift-mode-badge" style="display:none;margin-left:8px;padding:2px 10px;border-radius:10px;font-size:0.7rem;font-weight:700;vertical-align:middle;"></span>
+        </label>
+        <select id="drift-time" class="form-control" onchange="onDriftTimeColChange()">
+          <option value="">— select column —</option>
+        </select>
+        <!-- Mode indicator shown after column is picked -->
+        <div id="drift-mode-box" style="display:none;margin-top:0.5rem;border-radius:6px;padding:0.5rem 0.75rem;font-size:0.8rem;line-height:1.5;"></div>
+        <div class="text-grey text-sm mt-1" id="drift-time-hint">
+          Select any column. Datetime columns (date, year, timestamp) enable <strong>True Temporal Drift</strong>.
+          Any other column → data is split into equal <strong>segments</strong> for batch comparison.
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:0.9rem;">
+        <label class="form-label">Number of Time Periods</label>
+        <select id="drift-periods" class="form-control">
+          <option value="3">3 periods</option>
+          <option value="4">4 periods</option>
+          <option value="5" selected>5 periods (recommended)</option>
+          <option value="6">6 periods</option>
+          <option value="8">8 periods (max)</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-top:0.9rem;">
+        <label class="form-label">Domain Context</label>
+        <select id="drift-domain" class="form-control">
+          <option value="general">General</option>
+          <option value="hiring">Hiring / HR</option>
+          <option value="lending">Lending / Finance</option>
+          <option value="criminal_justice">Criminal Justice</option>
+          <option value="healthcare">Healthcare</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" style="margin-top:1rem;width:100%;background:linear-gradient(135deg,#0f2027,#2c5364);" onclick="runDriftAudit()">
+        ⏱️ Run Drift Analysis
+      </button>
+    </div>
+
+    <!-- RESULTS PANEL -->
+    <div class="card" id="drift-results-panel">
+      <div class="card-title">📊 Drift Analysis Results</div>
+      <div id="drift-placeholder" class="text-grey text-sm" style="padding:2rem;text-align:center;">
+        Configure and run drift analysis to see results here.
+      </div>
+      <div id="drift-results" class="hidden"></div>
+    </div>
+
+  </div>
+
+  <!-- TIMELINE CHART -->
+  <div class="card hidden" id="drift-chart-card" style="margin-top:1rem;">
+    <div class="card-title">📈 Bias Drift Timeline</div>
+    <div style="position:relative;height:280px;">
+      <canvas id="drift-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- ALERTS PANEL -->
+  <div class="card hidden" id="drift-alerts-card" style="margin-top:1rem;border-left:4px solid #e74c3c;">
+    <div class="card-title" style="color:#e74c3c;">🚨 Drift Alerts</div>
+    <div id="drift-alerts-list"></div>
+  </div>
+
+  <!-- REGULATORY FLAGS -->
+  <div class="card hidden" id="drift-reg-card" style="margin-top:1rem;">
+    <div class="card-title">⚖️ Regulatory Compliance Flags</div>
+    <div id="drift-reg-flags"></div>
+  </div>
+
+  <!-- AI REPORT SECTION -->
+  <div class="card hidden" id="drift-ai-card" style="margin-top:1rem;border-left:4px solid #7ee8fa;background:linear-gradient(135deg,rgba(15,32,39,0.03),rgba(44,83,100,0.05));">
+    <div class="card-title" style="color:#0f2027;">🤖 AI-Powered Regulatory Report <span style="background:#f97316;color:white;padding:2px 10px;border-radius:10px;font-size:0.72rem;margin-left:8px;">Groq (Free) · Gemini fallback</span></div>
+    <p class="text-grey text-sm mb-2">
+      Paste a <strong>free Groq API key</strong> to generate a plain-English regulatory compliance report.
+      Groq is free, instant, works in India, and requires no credit card.
+      If you have a Gemini key that works, that also works here.
+    </p>
+
+    <!-- Provider options -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.8rem;font-size:0.8rem;">
+      <div style="background:#fff7ed;border:1px solid #f97316;border-radius:8px;padding:0.6rem 0.8rem;">
+        <strong style="color:#c2410c;">🥇 Option 1 — Groq (Best)</strong><br>
+        Key starts with <code>gsk_</code><br>
+        1. <a href="https://console.groq.com" target="_blank" style="color:#c2410c;font-weight:700;">console.groq.com</a> → Sign in<br>
+        2. API Keys → Create API Key → Copy
+      </div>
+      <div style="background:#f0f9ff;border:1px solid #3b82f6;border-radius:8px;padding:0.6rem 0.8rem;">
+        <strong style="color:#1d4ed8;">🥈 Option 2 — OpenRouter (Backup)</strong><br>
+        Key starts with <code>sk-or-</code><br>
+        1. <a href="https://openrouter.ai/keys" target="_blank" style="color:#1d4ed8;font-weight:700;">openrouter.ai/keys</a> → Sign in<br>
+        2. Create Key → Copy
+      </div>
+    </div>
+
+    <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+      <input type="password" id="drift-api-key" class="form-control" 
+             placeholder="Paste Groq key (gsk_...) or OpenRouter key (sk-or-...) or Gemini key (AIza...)" 
+             style="flex:1;min-width:200px;font-family:monospace;font-size:0.85rem;" />
+      <button class="btn btn-primary" onclick="generateAIReport()" 
+              style="background:linear-gradient(135deg,#c2410c,#f97316);white-space:nowrap;">
+        🤖 Generate AI Report
+      </button>
+    </div>
+
+    <div id="drift-ai-loading" class="hidden" style="text-align:center;padding:1.5rem;">
+      <div style="font-size:2rem;animation:spin 1s linear infinite;display:inline-block;">⏳</div>
+      <div class="text-grey text-sm mt-1">Gemini is writing your regulatory report…</div>
+    </div>
+    <div id="drift-ai-report" class="hidden" style="margin-top:1rem;"></div>
+  </div>
+
+</div>
+</div><!-- /container drift -->
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     STEP 7 — AUDIT HISTORY TIMELINE  ★ NEW FEATURE
+     ══════════════════════════════════════════════════════════════════════ -->
+<div class="container">
+<div id="step-7" class="hidden">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.5rem;">
+    <div class="section-heading" style="margin:0;">📜 Step 7: Audit History &amp; Fairness Timeline</div>
+    <div style="display:flex;gap:0.5rem;">
+      <button onclick="loadHistory()" style="background:#0f2027;color:white;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.8rem;">🔄 Refresh</button>
+      <button onclick="clearHistory()" style="background:#e74c3c;color:white;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.8rem;">🗑 Clear</button>
+    </div>
+  </div>
+
+  <div class="card" style="border-left:4px solid #e94560;background:linear-gradient(135deg,rgba(233,69,96,0.04),rgba(15,32,39,0.06));margin-bottom:1rem;">
+    <div class="card-title" style="color:#0f2027;">📈 What This Does</div>
+    <p class="text-grey text-sm" style="line-height:1.6;">
+      Every audit you run is automatically saved here. Track how your model's fairness metrics evolve
+      as you iterate — see whether mitigations are actually improving things over time.
+      This is the <strong>missing layer</strong> in every other bias tool: longitudinal accountability.
+    </p>
+  </div>
+
+  <!-- Summary strip -->
+  <div id="history-summary" style="display:none;margin-bottom:1rem;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.6rem;margin-bottom:1rem;">
+      <div class="metric-card" style="text-align:center;">
+        <div class="metric-label">Total Audits</div>
+        <div id="hist-total" style="font-size:1.6rem;font-weight:800;color:#0f2027;">0</div>
+      </div>
+      <div class="metric-card" style="text-align:center;">
+        <div class="metric-label">Avg Severity</div>
+        <div id="hist-avg-sev" style="font-size:1.6rem;font-weight:800;">—</div>
+      </div>
+      <div class="metric-card" style="text-align:center;">
+        <div class="metric-label">Latest DPD</div>
+        <div id="hist-latest-dpd" style="font-size:1.6rem;font-weight:800;">—</div>
+      </div>
+      <div class="metric-card" style="text-align:center;">
+        <div class="metric-label">Trend</div>
+        <div id="hist-trend" style="font-size:1.4rem;font-weight:800;">—</div>
+      </div>
+    </div>
+    <!-- Chart -->
+    <div class="card" style="margin-bottom:1rem;">
+      <div class="card-title">📊 Fairness Score Over Time</div>
+      <div style="height:220px;"><canvas id="history-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Timeline list -->
+  <div id="history-list"></div>
+  <div id="history-empty" style="text-align:center;padding:3rem;color:#999;">
+    <div style="font-size:3rem;margin-bottom:0.5rem;">📭</div>
+    No audits recorded yet. Run your first audit and it will appear here automatically.
+  </div>
+
+</div>
+</div><!-- /container history -->
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+let state = {
+  sessionId: null,
+  columns: [],
+  auditResults: null,
+  driftResult: null,
+  driftMode: 'segment',   // 'temporal' | 'segment' — set by onDriftTimeColChange()
+  aiReport: null,
+  currentStep: 1,
+  chartRates: null,
+  chartMetrics: null,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP NAVIGATION
+// ─────────────────────────────────────────────────────────────────────────────
+function showStep(n) {
+  for(let i=1;i<=7;i++){
+    const el = document.getElementById(`step-${i}`);
+    if(el) el.classList.toggle('hidden', i!==n);
+    const tab = document.getElementById(`step-tab-${i}`);
+    if(tab) tab.classList.toggle('active', i===n);
+  }
+  state.currentStep = n;
+  // Populate drift dropdowns when step 6 is opened
+  if(n === 6 && state.columns && state.columns.length) populateDriftDropdowns();
+  // Load history when step 7 is opened
+  if(n === 7) loadHistory();
+}
+
+function showTab(id) {
+  const allTabs = ['tab-metrics','tab-intersectional','tab-charts','tab-explain','tab-counterfactual','tab-scorecard'];
+  allTabs.forEach(t=>{
+    document.getElementById(t).classList.toggle('hidden', t!==id);
+  });
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active', allTabs[i]===id);
+  });
+  if(id==='tab-charts' && state.auditResults) renderCharts(state.auditResults);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOADER
+// ─────────────────────────────────────────────────────────────────────────────
+function showLoader(text='Analysing…') {
+  document.getElementById('loader-text').textContent = text;
+  document.getElementById('loader').classList.add('show');
+}
+function hideLoader() {
+  document.getElementById('loader').classList.remove('show');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEMO DATASETS
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadDemoDatasets() {
+  const res = await fetch('/api/demo-datasets');
+  const demos = await res.json();
+  const container = document.getElementById('demo-cards');
+  const icons = { compas: '⚖️', adult_income: '💰', synthetic_hr: '👔' };
+  container.innerHTML = demos.map(d => `
+    <div class="demo-card" onclick="loadDemo('${d.id}')">
+      <h4>${icons[d.id]||'📊'} ${d.name}</h4>
+      <p>${d.description}</p>
+      <div class="demo-tags">
+        ${d.protected_attrs.map(a=>`<span class="demo-tag">${a}</span>`).join('')}
+        <span class="demo-tag">${d.rows.toLocaleString()} rows</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadDemo(datasetId) {
+  showLoader('Loading demo dataset…');
+  try {
+    const res = await fetch(`/api/load-demo/${datasetId}`);
+    const data = await res.json();
+    handleSessionData(data);
+  } catch(e) {
+    alert('Error loading demo: ' + e.message);
+  } finally {
+    hideLoader();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FILE UPLOAD
+// ─────────────────────────────────────────────────────────────────────────────
+async function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  showLoader('Uploading dataset…');
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    handleSessionData(data);
+  } catch(e) {
+    alert('Upload error: ' + e.message);
+  } finally {
+    hideLoader();
+  }
+}
+
+// Drag and drop
+const uploadZone = document.getElementById('upload-zone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('file-input').files = dt.files;
+    handleFileUpload({ target: { files: [file] } });
+  }
+});
+
+function handleSessionData(data) {
+  state.sessionId = data.session_id;
+  state.columns = data.columns;
+
+  // Populate selects
+  const selects = ['protected-attrs','y-pred-col','y-true-col','mit-attr','mit-pred'];
+  selects.forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = id === 'y-true-col' ? '<option value="">— None —</option>' : '';
+    data.columns.forEach(col => {
+      const opt = document.createElement('option');
+      opt.value = col; opt.textContent = col;
+      sel.appendChild(opt);
+    });
+  });
+
+  // Apply suggestions
+  const sugg = data.suggestions || {};
+  if (sugg.protected_attributes) {
+    const sel = document.getElementById('protected-attrs');
+    [...sel.options].forEach(o => {
+      o.selected = sugg.protected_attributes.includes(o.value);
+    });
+  }
+  if (sugg.target_column && sugg.target_column[0]) {
+    document.getElementById('y-pred-col').value = sugg.target_column[0];
+    document.getElementById('mit-pred').value = sugg.target_column[0];
+  }
+
+  // Show suggestions box
+  if (sugg.protected_attributes?.length || sugg.target_column?.length) {
+    const box = document.getElementById('suggestions-box');
+    box.classList.remove('hidden');
+    box.innerHTML = `💡 <strong>Auto-detected:</strong> Protected attributes: 
+      <strong>${(sugg.protected_attributes||[]).join(', ')||'none'}</strong> | 
+      Target: <strong>${(sugg.target_column||[])[0]||'none'}</strong>. Review and adjust below.`;
+  }
+
+  // Preview table
+  document.getElementById('preview-info').textContent =
+    `${data.shape.rows.toLocaleString()} rows × ${data.shape.cols} columns`;
+  if (data.preview) {
+    const table = document.getElementById('preview-table');
+    const cols = data.columns;
+    table.innerHTML = `
+      <thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+      <tbody>${data.preview.map(row=>
+        `<tr>${cols.map(c=>`<td>${row[c]??''}</td>`).join('')}</tr>`
+      ).join('')}</tbody>
+    `;
+  }
+
+  showStep(2);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RUN AUDIT
+// ─────────────────────────────────────────────────────────────────────────────
+async function runAudit() {
+  const protectedAttrs = [...document.getElementById('protected-attrs').selectedOptions]
+    .map(o => o.value);
+  const yPredCol = document.getElementById('y-pred-col').value;
+  const yTrueCol = document.getElementById('y-true-col').value || null;
+  const domain = document.getElementById('domain').value;
+  const posLabel = parseInt(document.getElementById('pos-label').value);
+
+  if (!protectedAttrs.length) { alert('Please select at least one protected attribute.'); return; }
+  if (!yPredCol) { alert('Please select the prediction column.'); return; }
+
+  showLoader('Running intersectional bias analysis…');
+  try {
+    const res = await fetch('/api/audit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: state.sessionId,
+        protected_attrs: protectedAttrs,
+        y_pred_col: yPredCol,
+        y_true_col: yTrueCol,
+        domain, pos_label: posLabel
+      })
+    });
+    const data = await res.json();
+    if (data.error) { alert('Audit error: ' + data.error); return; }
+    state.auditResults = data;
+    renderResults(data);
+    // Set mitigation dropdowns
+    if (protectedAttrs[0]) document.getElementById('mit-attr').value = protectedAttrs[0];
+    document.getElementById('mit-pred').value = yPredCol;
+    showStep(3);
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    hideLoader();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER RESULTS
+// ─────────────────────────────────────────────────────────────────────────────
+function renderResults(data) {
+  const score = data.severity_score || 0;
+
+  // Severity banner
+  let sevClass, sevText, sevEmoji;
+  if (score < 15) { sevClass='sev-low'; sevText='LOW BIAS'; sevEmoji='✅'; }
+  else if (score < 40) { sevClass='sev-medium'; sevText='MEDIUM BIAS'; sevEmoji='⚠️'; }
+  else if (score < 65) { sevClass='sev-high'; sevText='HIGH BIAS'; sevEmoji='🔴'; }
+  else { sevClass='sev-critical'; sevText='CRITICAL BIAS'; sevEmoji='🚨'; }
+
+  document.getElementById('severity-banner').innerHTML = `
+    <div class="severity-banner ${sevClass}">
+      <div class="score">${sevEmoji}</div>
+      <div class="info">
+        <h3>${sevText} — Score: ${score}/100</h3>
+        <p>Dataset: ${data.n_samples?.toLocaleString()||'?'} records | 
+           Domain: ${data.domain||'general'} | 
+           Attributes: ${(data.protected_attributes||[]).join(', ')}</p>
+      </div>
+    </div>
+  `;
+
+  // Metric cards
+  const dpd = data.demographic_parity_difference;
+  const di = data.disparate_impact_ratio;
+  const eod = data.equalized_odds_difference;
+  const ics = data.individual_consistency_score;
+
+  function metricStatus(val, threshold, higher_is_better=false) {
+    if (val === null || val === undefined) return 'metric-pass';
+    if (higher_is_better) return val > threshold ? 'metric-pass' : (val > threshold*0.9 ? 'metric-warn' : 'metric-fail');
+    return val < threshold ? 'metric-pass' : (val < threshold*1.5 ? 'metric-warn' : 'metric-fail');
+  }
+
+  document.getElementById('metric-cards').innerHTML = `
+    <div class="metric-card">
+      <div class="metric-label">Demographic Parity Diff</div>
+      <div class="metric-value ${metricStatus(dpd, 0.1)}">${dpd != null ? dpd.toFixed(3) : 'N/A'}</div>
+      <div class="metric-sub">Ideal: 0.000 | Threshold: &lt;0.10</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Disparate Impact Ratio</div>
+      <div class="metric-value ${metricStatus(di, 0.8, true)}">${di != null ? di.toFixed(3) : 'N/A'}</div>
+      <div class="metric-sub">Ideal: 1.000 | Legal min: ≥0.80</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Equalized Odds Diff</div>
+      <div class="metric-value ${metricStatus(eod, 0.1)}">${eod != null ? eod.toFixed(3) : 'N/A'}</div>
+      <div class="metric-sub">Ideal: 0.000 | Threshold: &lt;0.10</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Severity Score</div>
+      <div class="metric-value ${sevClass.replace('sev-','metric-')}">${score}</div>
+      <div class="metric-sub">Out of 100 (0 = no bias)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Individual Consistency</div>
+      <div class="metric-value ${metricStatus(ics, 0.9, true)}">${ics != null ? ics.toFixed(3) : 'N/A'}</div>
+      <div class="metric-sub">Ideal: 1.000 (similar people, similar predictions)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Intersectional Groups</div>
+      <div class="metric-value" style="color:var(--blue)">${data.intersectional_findings?.length||0}</div>
+      <div class="metric-sub">Multi-attribute combinations analysed</div>
+    </div>
+  `;
+
+  // Per-attribute metrics
+  const metricsHtml = Object.entries(data.metrics||{}).map(([attr, m]) => `
+    <div class="card mb-2">
+      <div class="card-title">📌 Attribute: <span style="color:var(--blue)">${attr}</span></div>
+      <div class="table-scroll">
+        <table class="inter-table">
+          <thead><tr><th>Metric</th><th>Value</th><th>Threshold</th><th>Status</th></tr></thead>
+          <tbody>
+            ${m.demographic_parity_difference != null ? `
+            <tr><td>Demographic Parity Difference</td>
+              <td><strong>${m.demographic_parity_difference.toFixed(4)}</strong></td>
+              <td>&lt; 0.10</td>
+              <td><span class="badge ${m.demographic_parity_difference<0.1?'badge-pass':'badge-fail'}">${m.demographic_parity_difference<0.1?'✅ PASS':'🔴 FAIL'}</span></td>
+            </tr>` : ''}
+            ${m.disparate_impact_ratio != null ? `
+            <tr><td>Disparate Impact Ratio</td>
+              <td><strong>${m.disparate_impact_ratio.toFixed(4)}</strong></td>
+              <td>≥ 0.80 (80% rule)</td>
+              <td><span class="badge ${m.disparate_impact_ratio>=0.8?'badge-pass':'badge-fail'}">${m.disparate_impact_ratio>=0.8?'✅ PASS':'🔴 FAIL'}</span></td>
+            </tr>` : ''}
+            ${m.equalized_odds_difference != null ? `
+            <tr><td>Equalized Odds Difference</td>
+              <td><strong>${m.equalized_odds_difference.toFixed(4)}</strong></td>
+              <td>&lt; 0.10</td>
+              <td><span class="badge ${m.equalized_odds_difference<0.1?'badge-pass':'badge-fail'}">${m.equalized_odds_difference<0.1?'✅ PASS':'🔴 FAIL'}</span></td>
+            </tr>` : ''}
+            ${m.false_positive_rate_difference != null ? `
+            <tr><td>False Positive Rate Difference</td>
+              <td><strong>${m.false_positive_rate_difference.toFixed(4)}</strong></td>
+              <td>&lt; 0.10</td>
+              <td><span class="badge ${m.false_positive_rate_difference<0.1?'badge-pass':'badge-warn'}">${m.false_positive_rate_difference<0.1?'✅ PASS':'⚠️ WARN'}</span></td>
+            </tr>` : ''}
+          </tbody>
+        </table>
+      </div>
+      ${m.positive_rates_by_group ? `
+      <div class="mt-2">
+        <div class="text-sm text-grey mb-1"><strong>Positive Outcome Rate by Group:</strong></div>
+        <div class="flex" style="flex-wrap:wrap;gap:8px;">
+          ${Object.entries(m.positive_rates_by_group).map(([g,r])=>`
+            <div style="background:var(--blue-light);border-radius:8px;padding:6px 14px;font-size:0.82rem;">
+              <strong>${g}</strong>: ${(r*100).toFixed(1)}%
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+    </div>
+  `).join('');
+  document.getElementById('metrics-detail').innerHTML = metricsHtml;
+
+  // Intersectional table
+  const findings = data.intersectional_findings || [];
+  const inter2 = findings.filter(f => f.type === 'intersectional_2way');
+  const tbody = document.getElementById('inter-tbody');
+  if (inter2.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--grey);">Select 2+ protected attributes to see intersectional analysis.</td></tr>';
+  } else {
+    tbody.innerHTML = inter2.slice(0, 20).map(f => {
+      const ratio = f.disparity_ratio || 1.0;
+      const diff = ((ratio - 1) * 100).toFixed(1);
+      const sign = ratio > 1 ? '+' : '';
+      let cls = 'badge-pass';
+      if (Math.abs(ratio-1) > 0.3) cls = 'badge-fail';
+      else if (Math.abs(ratio-1) > 0.1) cls = 'badge-warn';
+      return `<tr>
+        <td><strong>${f.group}</strong></td>
+        <td><span class="pill">${f.type.replace('intersectional_','').replace('way',' attrs')}</span></td>
+        <td>${f.group_size?.toLocaleString()||'?'}</td>
+        <td>${(f.positive_rate*100).toFixed(1)}%</td>
+        <td style="color:${ratio>1?'var(--green)':'var(--red)'}">${sign}${diff}% vs avg</td>
+        <td><span class="badge ${cls}">${Math.abs(ratio-1)<0.1?'✅ Fair':Math.abs(ratio-1)<0.3?'⚠️ Warn':'🔴 Biased'}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Explanation
+  document.getElementById('explanation-box').textContent = data.plain_explanation || 'No explanation available.';
+
+  // Counterfactual
+  const cfResults = data.counterfactual_probes || [];
+  const cfHtml = cfResults.length ? cfResults.map(cf => `
+    <div class="card mb-2">
+      <div class="card-title">Attribute: ${cf.attribute}</div>
+      <div class="alert alert-info">${cf.interpretation || cf.message || JSON.stringify(cf)}</div>
+      <div class="grid-2 mt-2">
+        <div class="metric-card">
+          <div class="metric-label">${cf.group_0 || 'Group A'}</div>
+          <div class="metric-value">${((cf.rate_group_0||0)*100).toFixed(1)}%</div>
+          <div class="metric-sub">Positive rate</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">${cf.group_1 || 'Group B'}</div>
+          <div class="metric-value">${((cf.rate_group_1||0)*100).toFixed(1)}%</div>
+          <div class="metric-sub">Positive rate</div>
+        </div>
+      </div>
+    </div>
+  `).join('') : '<div class="text-grey">Counterfactual analysis requires binary protected attributes.</div>';
+  document.getElementById('cf-results').innerHTML = cfHtml;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHARTS
+// ─────────────────────────────────────────────────────────────────────────────
+function renderCharts(data) {
+  // Chart 1: Positive rates per group
+  const metrics = data.metrics || {};
+  const primaryAttr = data.primary_attribute || Object.keys(metrics)[0];
+  if (primaryAttr && metrics[primaryAttr]) {
+    const rates = metrics[primaryAttr].positive_rates_by_group || {};
+    const labels = Object.keys(rates);
+    const values = labels.map(l => (rates[l]*100).toFixed(1));
+
+    if (state.chartRates) state.chartRates.destroy();
+    state.chartRates = new Chart(document.getElementById('chart-rates'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Positive Rate (%)',
+          data: values,
+          backgroundColor: labels.map((_,i) => ['#1A73E8','#D93025','#1E8E3E','#E37400','#9C27B0'][i%5]),
+          borderRadius: 8,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 100,
+          title: { display: true, text: 'Positive Rate (%)' } } }
+      }
+    });
+  }
+
+  // Chart 2: Fairness metrics radar/bar
+  const dpd = data.demographic_parity_difference || 0;
+  const di = data.disparate_impact_ratio || 1;
+  const eod = data.equalized_odds_difference || 0;
+
+  if (state.chartMetrics) state.chartMetrics.destroy();
+  state.chartMetrics = new Chart(document.getElementById('chart-metrics'), {
+    type: 'bar',
+    data: {
+      labels: ['DPD (ideal=0)', 'DI gap |1-DI| (ideal=0)', 'EOD (ideal=0)', 'Severity/100'],
+      datasets: [{
+        label: 'Value',
+        data: [dpd.toFixed(3), Math.abs(1-di).toFixed(3), eod.toFixed(3), (data.severity_score/100).toFixed(3)],
+        backgroundColor: ['#1A73E8','#E37400','#D93025','#9C27B0'],
+        borderRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, max: 1 } }
+    }
+  });
+
+  // Heatmap: intersectional 2-way
+  const findings2 = (data.intersectional_findings||[]).filter(f=>f.type==='intersectional_2way').slice(0,15);
+  if (findings2.length) {
+    const heatmapHtml = `
+      <div style="font-size:0.8rem;color:var(--grey);margin-bottom:8px;">
+        Showing top ${findings2.length} intersectional groups by disparity. 
+        🔴 = most biased, 🟢 = most favored, ⬜ = near average.
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        ${findings2.map(f=>{
+          const ratio = f.disparity_ratio || 1;
+          const pct = Math.abs(ratio-1)*100;
+          const r = ratio > 1 ? Math.min(255, Math.round(200*Math.min((ratio-1)/0.5,1))) : 0;
+          const g = ratio < 1 ? Math.min(255, Math.round(200*Math.min((1-ratio)/0.5,1))) : 0;
+          const bg = ratio > 1 ? `rgba(217,48,37,${Math.min(0.8,pct/50)})` :
+                     ratio < 1 ? `rgba(30,142,62,${Math.min(0.8,pct/50)})` : 'rgba(200,200,200,0.3)';
+          const color = pct > 20 ? 'white' : '#202124';
+          return `<div style="background:${bg};color:${color};padding:10px 14px;border-radius:10px;
+            font-size:0.78rem;min-width:160px;text-align:center;border:1px solid rgba(0,0,0,0.1);">
+            <div style="font-weight:700;margin-bottom:3px;">${f.group}</div>
+            <div>${(f.positive_rate*100).toFixed(1)}% pos rate</div>
+            <div style="font-size:0.7rem;opacity:0.85">${ratio>1?'+':''}${(ratio-1)*100>0?'+':''}${((ratio-1)*100).toFixed(1)}% vs avg</div>
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+    document.getElementById('heatmap-container').innerHTML = heatmapHtml;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MITIGATION
+// ─────────────────────────────────────────────────────────────────────────────
+async function runMitigation() {
+  const attr = document.getElementById('mit-attr').value;
+  const pred = document.getElementById('mit-pred').value;
+  const method = document.getElementById('mit-method').value;
+
+  showLoader('Applying bias mitigation…');
+  try {
+    const res = await fetch('/api/mitigate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: state.sessionId,
+        protected_attr: attr,
+        y_pred_col: pred,
+        method
+      })
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+
+    const dpd_imp = data.dpd_improvement_pct ?? 0;
+    const alreadyFair = data.already_fair;
+
+    // Build group rates table if available
+    const buildRatesTable = (rates) => {
+      if (!rates || !Object.keys(rates).length) return '';
+      return '<table style="width:100%;border-collapse:collapse;font-size:0.78rem;margin-top:0.5rem;">' +
+        '<tr style="background:#f5f5f5;"><th style="padding:4px 8px;text-align:left;">Group</th><th style="padding:4px 8px;text-align:center;">Positive Rate</th></tr>' +
+        Object.entries(rates).map(([g,r]) =>
+          `<tr><td style="padding:4px 8px;font-weight:600;">${g}</td><td style="padding:4px 8px;text-align:center;">${(r*100).toFixed(1)}%</td></tr>`
+        ).join('') + '</table>';
+    };
+
+    const alertClass  = alreadyFair ? 'alert-info' : (dpd_imp > 0 ? 'alert-success' : 'alert-info');
+    const alertIcon   = alreadyFair ? 'ℹ️' : (dpd_imp > 0 ? '✅' : 'ℹ️');
+
+    document.getElementById('mit-results').innerHTML = `
+      <div class="alert ${alertClass} mb-2">${alertIcon} ${data.message}</div>
+
+      ${alreadyFair ? `
+        <div style="background:#f0f9f0;border:1px solid #27ae60;border-radius:8px;padding:1rem;margin-bottom:0.8rem;font-size:0.88rem;color:#1a5c2a;">
+          <strong>✅ This model is already near-fair on ${data.before?.dpd?.toFixed(4) ? 'this attribute' : ''}</strong><br>
+          DPD = ${data.before?.dpd?.toFixed(4)} (threshold &lt; 0.10). The bias gap between groups is too small
+          to improve meaningfully through post-processing. Try auditing a different attribute or column
+          where the model shows larger disparities.
+        </div>
+      ` : ''}
+
+      <div class="grid-2">
+        <div class="card" style="border:2px solid var(--red)">
+          <div class="card-title" style="color:var(--red)">⚠️ Before Mitigation</div>
+          <div class="metric-value metric-fail">${data.before?.dpd?.toFixed(3)||'N/A'}</div>
+          <div class="metric-label">Demographic Parity Difference</div>
+          <div class="mt-2 metric-value metric-fail">${data.before?.di?.toFixed(3)||'N/A'}</div>
+          <div class="metric-label">Disparate Impact Ratio</div>
+          ${buildRatesTable(data.before?.group_rates)}
+        </div>
+        <div class="card" style="border:2px solid var(--green)">
+          <div class="card-title" style="color:var(--green)">✅ After Mitigation</div>
+          <div class="metric-value ${dpd_imp > 0 ? 'metric-pass' : 'metric-warn'}">${data.after?.dpd?.toFixed(3)||'N/A'}</div>
+          <div class="metric-label">Demographic Parity Difference</div>
+          <div class="mt-2 metric-value metric-pass">${data.after?.di?.toFixed(3)||'N/A'}</div>
+          <div class="metric-label">Disparate Impact Ratio</div>
+          ${buildRatesTable(data.after?.group_rates)}
+        </div>
+      </div>
+      <div class="alert alert-info mt-2">
+        📊 <strong>DPD improved by ${dpd_imp}%</strong> | 
+        ${data.n_predictions_changed} predictions adjusted | 
+        No model retraining required.
+      </div>
+    `;
+  } catch(e) {
+    alert('Mitigation error: ' + e.message);
+  } finally {
+    hideLoader();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REPORT
+// ─────────────────────────────────────────────────────────────────────────────
+async function downloadReport() {
+  if (!state.sessionId || !state.auditResults) {
+    alert('Please run an audit first.');
+    return;
+  }
+  const geminiKey = (document.getElementById('report-gemini-key')?.value || '').trim();
+  const msg = geminiKey
+    ? 'Generating PDF with Gemini AI executive summary…'
+    : 'Generating PDF report…';
+  showLoader(msg);
+  try {
+    const res = await fetch('/api/report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: state.sessionId, api_key: geminiKey || undefined })
+    });
+
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'fairmind_bias_report.pdf';
+      a.click();
+      document.getElementById('report-msg').innerHTML = geminiKey
+        ? '<div class="alert alert-success">✅ Report downloaded — includes ✦ Google Gemini AI executive summary!</div>'
+        : '<div class="alert alert-success">✅ Report downloaded successfully!</div>';
+    } else {
+      const err = await res.json();
+      document.getElementById('report-msg').innerHTML =
+        `<div class="alert alert-error">Note: PDF generation requires reportlab. 
+         Install with: <code>pip install reportlab</code><br>
+         Error: ${err.error}</div>`;
+    }
+  } catch(e) {
+    alert('Report error: ' + e.message);
+  } finally {
+    hideLoader();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ★ DRIFT ANALYSIS — NEW FEATURE
+// ─────────────────────────────────────────────────────────────────────────────
+
+let driftChartInstance = null;
+
+// ── Datetime detection helpers ────────────────────────────────────────────────
+// Keywords strongly suggesting a true date/time column
+const DATE_KEYWORDS = ['date','time','year','month','quarter','week','day','ts','timestamp','period','when','created','updated','dt'];
+const NUMERIC_LIKE  = ['age','id','seq','row','index','num','count','rank','score'];
+
+function columnLooksLikeDatetime(colName) {
+  const lower = colName.toLowerCase();
+  return DATE_KEYWORDS.some(k => lower.includes(k));
+}
+
+function columnLooksLikeNumericOrder(colName) {
+  const lower = colName.toLowerCase();
+  return NUMERIC_LIKE.some(k => lower.includes(k));
+}
+
+function getDriftMode(colName) {
+  if (!colName) return null;
+  if (columnLooksLikeDatetime(colName)) return 'temporal';
+  return 'segment';
+}
+
+function onDriftTimeColChange() {
+  const col   = document.getElementById('drift-time').value;
+  const badge = document.getElementById('drift-mode-badge');
+  const box   = document.getElementById('drift-mode-box');
+  const title = document.getElementById('drift-time-label');
+  const hint  = document.getElementById('drift-time-hint');
+
+  if (!col) {
+    badge.style.display = 'none';
+    box.style.display   = 'none';
+    return;
+  }
+
+  const mode = getDriftMode(col);
+  state.driftMode = mode;
+
+  if (mode === 'temporal') {
+    // True temporal drift
+    badge.style.display     = 'inline';
+    badge.textContent       = '📅 TRUE TEMPORAL MODE';
+    badge.style.background  = '#0f2027';
+    badge.style.color       = '#7ee8fa';
+
+    box.style.display       = 'block';
+    box.style.background    = 'linear-gradient(135deg,rgba(15,32,39,0.06),rgba(44,83,100,0.08))';
+    box.style.border        = '1px solid #7ee8fa';
+    box.style.color         = '#0f2027';
+    box.innerHTML = `
+      <strong>✅ True Temporal Drift Detected</strong><br>
+      Column <code>${col}</code> looks like a date/time column.<br>
+      FairMind will sort your data <strong>chronologically</strong> and measure how bias changes
+      over actual time — detecting whether discrimination is worsening or improving across real periods.
+      Chart X-axis will show <strong>time labels</strong>.
+    `;
+    hint.style.display = 'none';
+  } else {
+    // Segment / batch mode
+    badge.style.display     = 'inline';
+    badge.textContent       = '📊 BATCH SEGMENT MODE';
+    badge.style.background  = '#e67e22';
+    badge.style.color       = 'white';
+
+    box.style.display       = 'block';
+    box.style.background    = '#fff8f0';
+    box.style.border        = '1px solid #e67e22';
+    box.style.color         = '#7d3c00';
+    box.innerHTML = `
+      <strong>ℹ️ Batch / Segment Mode</strong><br>
+      Column <code>${col}</code> is not a recognised date/time column.<br>
+      FairMind will split your data into <strong>equal-size batches</strong> ordered by this column's values
+      and compare bias across segments. Results show <strong>relative</strong> bias change, not true chronological drift.<br>
+      <em>Tip: For True Temporal Drift, pick a column named "date", "year", "timestamp", etc.</em>
+    `;
+    hint.style.display = 'none';
+  }
+
+  // Dynamically relabel the results table header & title when results are visible
+  updateDriftTableLabels(mode);
+}
+
+function updateDriftTableLabels(mode) {
+  const tableTitle  = document.getElementById('drift-table-title');
+  const segHeader   = document.getElementById('drift-seg-header');
+  const chartCard   = document.getElementById('drift-chart-card');
+
+  if (tableTitle) {
+    tableTitle.textContent = mode === 'temporal'
+      ? '📅 Period-by-Period Breakdown (Chronological)'
+      : '📊 Batch / Segment Breakdown';
+  }
+  if (segHeader) {
+    segHeader.textContent = mode === 'temporal' ? 'Time Period' : 'Data Segment';
+  }
+  // Update chart title label
+  if (chartCard) {
+    const chartTitle = chartCard.querySelector('.card-title');
+    if (chartTitle) {
+      chartTitle.textContent = mode === 'temporal'
+        ? '📈 Bias Drift Timeline (Chronological)'
+        : '📊 Bias Across Data Segments';
+    }
+  }
+}
+
+function populateDriftDropdowns() {
+  const cols = state.columns || [];
+  ['drift-attr','drift-pred','drift-time'].forEach(id => {
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— select column —</option>';
+    cols.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      if(c === cur) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  });
+  // Pre-fill from audit config if available
+  if(state.auditResults) {
+    const attrs = state.auditResults.protected_attributes || [];
+    if(attrs[0]) document.getElementById('drift-attr').value = attrs[0];
+    if(state.auditResults.prediction_column)
+      document.getElementById('drift-pred').value = state.auditResults.prediction_column;
+  }
+
+  // Auto-detect and pre-select best time column
+  const timeSel = document.getElementById('drift-time');
+  const allCols = state.columns || [];
+  // Priority: true datetime keyword > numeric-order keyword > first remaining col
+  let bestCol = allCols.find(c => columnLooksLikeDatetime(c))
+             || allCols.find(c => columnLooksLikeNumericOrder(c));
+  if (bestCol && !timeSel.value) {
+    timeSel.value = bestCol;
+    onDriftTimeColChange(); // trigger mode badge immediately
+  }
+}
+
+async function runDriftAudit() {
+  if(!state.sessionId) { alert('Please upload a dataset first.'); return; }
+
+  const attr    = document.getElementById('drift-attr').value;
+  const pred    = document.getElementById('drift-pred').value;
+  const timecol = document.getElementById('drift-time').value;
+  const periods = parseInt(document.getElementById('drift-periods').value);
+  const domain  = document.getElementById('drift-domain').value;
+
+  if(!attr)    { alert('Please select a protected attribute.'); return; }
+  if(!pred)    { alert('Please select a prediction column.'); return; }
+  if(!timecol) { alert('Please select a time column.'); return; }
+
+  showLoader('Analysing bias drift across time periods…');
+  try {
+    const res = await fetch('/api/drift-audit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id:     state.sessionId,
+        protected_attr: attr,
+        y_pred_col:     pred,
+        time_col:       timecol,
+        n_periods:      periods,
+        domain:         domain,
+      })
+    });
+    const data = await res.json();
+    if(data.error) { alert('Drift audit error: ' + data.error); return; }
+    state.driftResult = data;
+    renderDriftResults(data);
+    // Show AI report panel
+    document.getElementById('drift-ai-card').classList.remove('hidden');
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    hideLoader();
+  }
+}
+
+function renderDriftResults(d) {
+  // Update table labels based on current mode BEFORE rendering
+  const currentMode = state.driftMode || 'segment';
+  updateDriftTableLabels(currentMode);
+
+  // ── Summary card ──────────────────────────────────────────────────────────
+  const trendColors = { WORSENING:'#e74c3c', IMPROVING:'#27ae60', STABLE:'#3498db' };
+  const trendColor  = trendColors[d.trend] || '#666';
+  const totalChange = d.total_dpd_change;
+  const changeSign  = totalChange >= 0 ? '+' : '';
+
+  document.getElementById('drift-placeholder').classList.add('hidden');
+  document.getElementById('drift-results').classList.remove('hidden');
+  document.getElementById('drift-results').innerHTML = `
+    <div style="text-align:center;padding:1rem 0 0.5rem;">
+      <div style="font-size:2.8rem;">${d.trend_emoji}</div>
+      <div style="font-size:1.6rem;font-weight:800;color:${trendColor};">${d.trend}</div>
+      <div class="text-grey text-sm">Bias drift trend over ${d.n_periods} periods</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-top:0.8rem;">
+      <div class="metric-card" style="text-align:center;">
+        <div class="metric-label">Total DPD Change</div>
+        <div style="font-size:1.3rem;font-weight:800;color:${totalChange>0?'#e74c3c':totalChange<0?'#27ae60':'#3498db'};">
+          ${changeSign}${totalChange.toFixed(4)}
+        </div>
+        <div class="metric-sub">${totalChange>0?'Bias increased':'Bias decreased'}</div>
+      </div>
+      <div class="metric-card" style="text-align:center;">
+        <div class="metric-label">Avg Severity</div>
+        <div style="font-size:1.3rem;font-weight:800;color:${d.summary.avg_severity>50?'#e74c3c':d.summary.avg_severity>25?'#f39c12':'#27ae60'};">
+          ${d.summary.avg_severity}/100
+        </div>
+        <div class="metric-sub">Across all periods</div>
+      </div>
+      <div class="metric-card" style="text-align:center;">
+        <div class="metric-label">Worst Period</div>
+        <div style="font-size:0.95rem;font-weight:700;color:#e74c3c;">${d.worst_period.period_label}</div>
+        <div class="metric-sub">DPD = ${d.worst_period.dpd.toFixed(4)}</div>
+      </div>
+      <div class="metric-card" style="text-align:center;">
+        <div class="metric-label">Best Period</div>
+        <div style="font-size:0.95rem;font-weight:700;color:#27ae60;">${d.best_period.period_label}</div>
+        <div class="metric-sub">DPD = ${d.best_period.dpd.toFixed(4)}</div>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <div class="card-title text-sm">📋 <span id="drift-table-title">Batch / Segment Breakdown</span></div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.8rem;margin-top:0.5rem;">
+        <thead>
+          <tr style="background:var(--dark);color:white;">
+            <th style="padding:7px 10px;text-align:left;" id="drift-seg-header">Data Segment</th>
+            <th style="padding:7px 10px;text-align:center;">DPD</th>
+            <th style="padding:7px 10px;text-align:center;">Disp. Impact</th>
+            <th style="padding:7px 10px;text-align:center;">Severity</th>
+            <th style="padding:7px 10px;text-align:center;">Legal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${d.timeline.map((t,i)=>`
+            <tr style="border-bottom:1px solid var(--border);background:${i%2===0?'white':'var(--bg)'};">
+              <td style="padding:7px 10px;font-weight:600;">${t.period_label}</td>
+              <td style="padding:7px 10px;text-align:center;color:${t.dpd>0.15?'#e74c3c':t.dpd>0.05?'#f39c12':'#27ae60'};font-weight:700;">${t.dpd.toFixed(4)}</td>
+              <td style="padding:7px 10px;text-align:center;color:${t.di<0.8?'#e74c3c':t.di<0.9?'#f39c12':'#27ae60'};font-weight:700;">${t.di.toFixed(4)}</td>
+              <td style="padding:7px 10px;text-align:center;">${t.severity_score}/100</td>
+              <td style="padding:7px 10px;text-align:center;">${t.legal_compliant?'<span style="color:#27ae60;font-weight:700;">✅ PASS</span>':'<span style="color:#e74c3c;font-weight:700;">❌ FAIL</span>'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  // ── Timeline chart ────────────────────────────────────────────────────────
+  document.getElementById('drift-chart-card').classList.remove('hidden');
+  if(driftChartInstance) driftChartInstance.destroy();
+  const ctx = document.getElementById('drift-chart').getContext('2d');
+  driftChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: d.timeline.map(t => t.period_label),
+      datasets: [
+        {
+          label: 'Demographic Parity Difference (DPD)',
+          data: d.timeline.map(t => t.dpd),
+          borderColor: trendColor,
+          backgroundColor: trendColor + '22',
+          borderWidth: 3,
+          pointRadius: 6,
+          pointBackgroundColor: d.timeline.map(t => t.legal_compliant ? '#27ae60' : '#e74c3c'),
+          pointBorderColor: 'white',
+          pointBorderWidth: 2,
+          tension: 0.3,
+          fill: true,
+          yAxisID: 'y',
+        },
+        {
+          label: 'Disparate Impact Ratio',
+          data: d.timeline.map(t => t.di),
+          borderColor: '#9b59b6',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderDash: [6,3],
+          pointRadius: 4,
+          tension: 0.3,
+          yAxisID: 'y2',
+        },
+        {
+          label: 'Legal DPD Limit (0.10)',
+          data: d.timeline.map(() => 0.1),
+          borderColor: '#e74c3c',
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderDash: [4,4],
+          pointRadius: 0,
+          yAxisID: 'y',
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            afterBody: (items) => {
+              const idx = items[0].dataIndex;
+              const t = d.timeline[idx];
+              return [`n = ${t.n_samples}`, t.legal_compliant ? '✅ Legal PASS' : '❌ Legal FAIL'];
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          type: 'linear',
+          position: 'left',
+          title: { display: true, text: 'DPD (lower = fairer)' },
+          min: 0,
+        },
+        y2: {
+          type: 'linear',
+          position: 'right',
+          title: { display: true, text: 'Disparate Impact (higher = fairer)' },
+          grid: { drawOnChartArea: false },
+          min: 0, max: 1.2,
+        }
+      }
+    }
+  });
+
+  // ── Alerts ────────────────────────────────────────────────────────────────
+  if(d.alerts && d.alerts.length > 0) {
+    document.getElementById('drift-alerts-card').classList.remove('hidden');
+    const sevColors = { CRITICAL:'#e74c3c', HIGH:'#e67e22', MEDIUM:'#f39c12' };
+    document.getElementById('drift-alerts-list').innerHTML = d.alerts.map(a => `
+      <div style="border-left:4px solid ${sevColors[a.severity]||'#999'};padding:0.7rem 1rem;margin-bottom:0.6rem;background:${sevColors[a.severity]||'#999'}11;border-radius:4px;">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+          <span style="background:${sevColors[a.severity]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:0.72rem;font-weight:700;">${a.severity}</span>
+          <span style="font-size:0.78rem;color:#666;font-weight:600;">${a.type.replace(/_/g,' ')}</span>
+          <span style="font-size:0.78rem;color:#999;margin-left:auto;">📅 ${a.period}</span>
+        </div>
+        <div style="font-size:0.85rem;color:#333;">${a.message}</div>
+      </div>
+    `).join('');
+  }
+
+  // ── Regulatory flags ──────────────────────────────────────────────────────
+  document.getElementById('drift-reg-card').classList.remove('hidden');
+  const reg = d.regulatory_flags;
+  document.getElementById('drift-reg-flags').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.6rem;">
+      ${[
+        ['EU AI Act Article 9', reg.eu_ai_act_article9, 'Continuous monitoring violation'],
+        ['GDPR Article 22', reg.gdpr_article22, 'Automated decision concern'],
+        [`EEOC 80% Rule (${reg.eeoc_80_rule_violations} violations)`, reg.eeoc_80_rule_violations > 0, 'Disparate impact threshold breach'],
+        ['Monitoring Required', reg.continuous_monitoring_required, 'Re-audit recommended immediately'],
+      ].map(([label, triggered, desc]) => `
+        <div style="border:1px solid ${triggered?'#e74c3c':'#27ae60'};border-radius:8px;padding:0.7rem;background:${triggered?'#fdf2f2':'#f0faf0'};">
+          <div style="font-weight:700;color:${triggered?'#e74c3c':'#27ae60'};font-size:0.85rem;">${triggered?'⚠️':'✅'} ${label}</div>
+          <div style="font-size:0.75rem;color:#666;margin-top:3px;">${desc}</div>
+          <div style="font-size:0.78rem;font-weight:700;margin-top:4px;color:${triggered?'#e74c3c':'#27ae60'};">${triggered?'TRIGGERED':'CLEAR'}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+async function generateAIReport() {
+  if(!state.sessionId || !state.driftResult) {
+    alert('Please run the drift analysis first.');
+    return;
+  }
+  const apiKey = document.getElementById('drift-api-key').value.trim();
+  if(!apiKey) {
+    alert('Please enter your Gemini API key.\nGet one free at: https://aistudio.google.com/app/api-keys');
+    return;
+  }
+
+  document.getElementById('drift-ai-loading').classList.remove('hidden');
+  document.getElementById('drift-ai-report').classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/drift-ai-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: state.sessionId, api_key: apiKey })
+    });
+    const data = await res.json();
+    if(data.error) {
+      document.getElementById('drift-ai-report').innerHTML =
+        `<div class="alert alert-error">❌ ${data.error}</div>`;
+      document.getElementById('drift-ai-report').classList.remove('hidden');
+      return;
+    }
+
+    // Render the markdown-like report
+    const raw = data.report || '';
+    const html = raw
+      .replace(/^## (.+)$/gm, '<h3 style="color:#0f2027;border-bottom:2px solid #7ee8fa;padding-bottom:4px;margin-top:1.2rem;">$1</h3>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^- (.+)$/gm, '<li style="margin:4px 0;">$1</li>')
+      .replace(/\n\n/g, '</p><p style="line-height:1.7;margin:0.5rem 0;">')
+      .replace(/\n/g, '<br>');
+
+    document.getElementById('drift-ai-report').innerHTML = `
+      <div style="background:white;border-radius:8px;padding:1.2rem;border:1px solid #e0e0e0;">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;padding-bottom:0.7rem;border-bottom:2px solid #7ee8fa;">
+          <span style="font-size:1.3rem;">🤖</span>
+          <div>
+            <div style="font-weight:800;font-size:0.95rem;color:#0f2027;">AI Regulatory Compliance Report</div>
+            <div style="font-size:0.72rem;color:#666;">Generated by ${data.model_used || "gemini (free tier)"} · ${new Date().toLocaleString()}</div>
+          </div>
+          <button onclick="copyAIReport()" style="margin-left:auto;background:#0f2027;color:white;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem;">📋 Copy</button>
+        </div>
+        <div style="font-size:0.88rem;line-height:1.7;color:#333;">
+          <p style="line-height:1.7;margin:0.5rem 0;">${html}</p>
+        </div>
+      </div>
+    `;
+    document.getElementById('drift-ai-report').classList.remove('hidden');
+    state.aiReport = raw;
+
+  } catch(e) {
+    document.getElementById('drift-ai-report').innerHTML =
+      `<div class="alert alert-error">❌ Error: ${e.message}</div>`;
+    document.getElementById('drift-ai-report').classList.remove('hidden');
+  } finally {
+    document.getElementById('drift-ai-loading').classList.add('hidden');
+  }
+}
+
+function copyAIReport() {
+  if(state.aiReport) {
+    navigator.clipboard.writeText(state.aiReport)
+      .then(() => alert('Report copied to clipboard!'))
+      .catch(() => alert('Copy failed — please select and copy manually.'));
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FEATURE 2: REGULATORY SCORECARD
+// ─────────────────────────────────────────────────────────────────────────────
+let scorecardLoaded = false;
+
+async function loadScorecard() {
+  if (!state.sessionId || !state.auditResults) {
+    document.getElementById('scorecard-placeholder').style.display = 'block';
+    document.getElementById('scorecard-cards').innerHTML = '';
+    document.getElementById('scorecard-summary').innerHTML = '';
+    return;
+  }
+  document.getElementById('scorecard-placeholder').style.display = 'none';
+  document.getElementById('scorecard-loading').classList.remove('hidden');
+  document.getElementById('scorecard-cards').innerHTML = '';
+  document.getElementById('scorecard-summary').innerHTML = '';
+
+  try {
+    const res = await fetch('/api/scorecard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: state.sessionId })
+    });
+    const data = await res.json();
+    if (data.error) { alert('Scorecard error: ' + data.error); return; }
+
+    renderScorecard(data);
+  } catch(e) {
+    alert('Error loading scorecard: ' + e.message);
+  } finally {
+    document.getElementById('scorecard-loading').classList.add('hidden');
+  }
+}
+
+function renderScorecard(data) {
+  const s = data.summary;
+  const overallColor = s.overall === 'ALL CLEAR' ? '#27ae60' : s.overall === 'HIGH RISK' ? '#e74c3c' : '#e67e22';
+  const overallEmoji = s.overall === 'ALL CLEAR' ? '✅' : s.overall === 'HIGH RISK' ? '🚨' : '⚠️';
+
+  document.getElementById('scorecard-summary').innerHTML = `
+    <div style="display:flex;align-items:center;gap:1rem;padding:1rem;border-radius:10px;background:${overallColor}11;border:2px solid ${overallColor};margin-bottom:1rem;flex-wrap:wrap;">
+      <div style="font-size:2.5rem;">${overallEmoji}</div>
+      <div>
+        <div style="font-size:1.3rem;font-weight:800;color:${overallColor};">${s.overall}</div>
+        <div style="font-size:0.82rem;color:#555;">${s.passing}/${s.total} regulations passing · Worst DPD: ${s.worst_dpd ?? 'N/A'} · Worst DI: ${s.worst_di ?? 'N/A'}</div>
+      </div>
+      <div style="margin-left:auto;font-size:0.78rem;color:#888;">Last refreshed: ${new Date().toLocaleTimeString()}</div>
+    </div>
+  `;
+
+  const cards = data.scorecard.map(reg => {
+    const color = reg.status === 'PASS' ? '#27ae60' : reg.status === 'FAIL' ? '#e74c3c' : '#999';
+    const bg    = reg.status === 'PASS' ? '#f0faf0' : reg.status === 'FAIL' ? '#fdf2f2' : '#f9f9f9';
+    const badge = reg.status === 'PASS' ? '✅ PASS' : reg.status === 'FAIL' ? '❌ FAIL' : '❓ N/A';
+    return `
+      <div style="border:2px solid ${color};border-radius:10px;padding:1rem;background:${bg};margin-bottom:0.8rem;">
+        <div style="display:flex;align-items:flex-start;gap:0.75rem;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+              <span style="background:${color};color:white;padding:2px 10px;border-radius:10px;font-size:0.72rem;font-weight:800;">${badge}</span>
+              <span style="font-weight:800;font-size:0.9rem;color:#0f2027;">${reg.regulation}</span>
+            </div>
+            <div style="font-size:0.75rem;color:#888;margin-bottom:0.4rem;">${reg.article}</div>
+            <div style="font-size:0.82rem;color:#444;margin-bottom:0.5rem;">${reg.description}</div>
+            <div style="font-size:0.82rem;font-weight:600;color:${color};">${reg.verdict}</div>
+          </div>
+          <div style="min-width:180px;background:white;border-radius:8px;padding:0.7rem;border:1px solid ${color}33;">
+            <div style="font-size:0.72rem;color:#888;font-weight:700;margin-bottom:0.3rem;">METRIC CHECKED</div>
+            <div style="font-size:0.82rem;"><strong>${reg.metric_used}</strong> = <span style="color:${color};font-weight:700;">${reg.actual_value ?? 'N/A'}</span></div>
+            <div style="font-size:0.72rem;color:#888;margin-top:2px;">Threshold: ${reg.operator === 'lt' ? '< ' : '> '}${reg.threshold}</div>
+            <div style="font-size:0.72rem;color:#e74c3c;margin-top:6px;font-weight:600;">${reg.status === 'FAIL' ? '⚠️ ' + reg.consequence : ''}</div>
+          </div>
+        </div>
+        <div style="margin-top:0.7rem;padding:0.6rem;background:${color}11;border-radius:6px;font-size:0.8rem;color:#333;border-left:3px solid ${color};">
+          <strong>Plain-English Verdict:</strong> ${reg.plain_verdict}
+          <a href="${reg.url}" target="_blank" style="color:#3498db;margin-left:6px;font-size:0.72rem;">Read regulation ↗</a>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('scorecard-cards').innerHTML = cards;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FEATURE 1: AUDIT HISTORY TIMELINE
+// ─────────────────────────────────────────────────────────────────────────────
+let historyChartInstance = null;
+
+async function loadHistory() {
+  try {
+    const res  = await fetch('/api/audit-history');
+    const data = await res.json();
+    renderHistory(data);
+  } catch(e) {
+    console.error('History load error:', e);
+  }
+}
+
+function clearHistory() {
+  if (!confirm('Clear all audit history? This cannot be undone.')) return;
+  // History lives server-side, so we just re-fetch (it'll be empty after restart)
+  // For UX, clear the UI immediately
+  renderHistory([]);
+}
+
+function renderHistory(audits) {
+  const empty = document.getElementById('history-empty');
+  const summary = document.getElementById('history-summary');
+  const list  = document.getElementById('history-list');
+
+  if (!audits || audits.length === 0) {
+    empty.style.display = 'block';
+    summary.style.display = 'none';
+    list.innerHTML = '';
+    return;
+  }
+
+  empty.style.display = 'none';
+  summary.style.display = 'block';
+
+  // Summary stats
+  const dpds = audits.filter(a => a.dpd != null).map(a => a.dpd);
+  const sevs = audits.map(a => a.overall_severity || 0);
+  const avgSev = Math.round(sevs.reduce((a,b)=>a+b,0)/sevs.length);
+  const latestDpd = dpds.length ? dpds[0] : null;
+
+  // Trend: compare first vs last DPD
+  let trendHTML = '—';
+  if (dpds.length >= 2) {
+    const oldest = dpds[dpds.length-1];
+    const newest = dpds[0];
+    if (newest < oldest - 0.01) trendHTML = '<span style="color:#27ae60;">📉 Improving</span>';
+    else if (newest > oldest + 0.01) trendHTML = '<span style="color:#e74c3c;">📈 Worsening</span>';
+    else trendHTML = '<span style="color:#3498db;">➡️ Stable</span>';
+  }
+
+  document.getElementById('hist-total').textContent = audits.length;
+  document.getElementById('hist-avg-sev').innerHTML = `<span style="color:${avgSev>60?'#e74c3c':avgSev>30?'#e67e22':'#27ae60'}">${avgSev}/100</span>`;
+  document.getElementById('hist-latest-dpd').innerHTML = latestDpd != null
+    ? `<span style="color:${latestDpd>0.15?'#e74c3c':latestDpd>0.05?'#e67e22':'#27ae60'}">${latestDpd.toFixed(4)}</span>`
+    : '—';
+  document.getElementById('hist-trend').innerHTML = trendHTML;
+
+  // Chart (reverse to show chronological order)
+  const chronological = [...audits].reverse();
+  if (historyChartInstance) historyChartInstance.destroy();
+  const ctx = document.getElementById('history-chart').getContext('2d');
+  historyChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: chronological.map((a,i) => `Audit #${chronological.length - i + audits.length - chronological.length}`),
+      datasets: [
+        {
+          label: 'Severity Score (/100)',
+          data: chronological.map(a => a.overall_severity),
+          borderColor: '#e74c3c',
+          backgroundColor: '#e74c3c22',
+          borderWidth: 2.5,
+          pointRadius: 5,
+          tension: 0.3,
+          fill: true,
+          yAxisID: 'y',
+        },
+        {
+          label: 'DPD (lower = fairer)',
+          data: chronological.map(a => a.dpd),
+          borderColor: '#3498db',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderDash: [5,3],
+          pointRadius: 4,
+          tension: 0.3,
+          yAxisID: 'y2',
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y:  { title: { display: true, text: 'Severity (0-100)' }, min: 0, max: 100 },
+        y2: { position: 'right', title: { display: true, text: 'DPD' }, min: 0, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+
+  // Timeline list
+  const sevColor = sev => sev > 60 ? '#e74c3c' : sev > 30 ? '#e67e22' : '#27ae60';
+  list.innerHTML = audits.map((a, i) => `
+    <div style="border:1px solid #e0e0e0;border-left:4px solid ${sevColor(a.overall_severity)};border-radius:8px;padding:0.85rem 1rem;margin-bottom:0.6rem;background:white;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <div style="font-size:1.4rem;">${a.overall_severity > 60 ? '🚨' : a.overall_severity > 30 ? '⚠️' : '✅'}</div>
+      <div style="flex:1;min-width:180px;">
+        <div style="font-weight:700;font-size:0.88rem;color:#0f2027;">
+          Audit #${audits.length - i} — ${a.domain || 'general'} domain
+        </div>
+        <div style="font-size:0.75rem;color:#888;margin-top:2px;">
+          ${new Date(a.timestamp).toLocaleString()} · ${a.n_rows?.toLocaleString() || '?'} rows · 
+          Attributes: ${(a.protected_attrs || []).join(', ')}
+        </div>
+      </div>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+        <div style="text-align:center;min-width:70px;">
+          <div style="font-size:0.65rem;color:#888;font-weight:700;">SEVERITY</div>
+          <div style="font-size:1.1rem;font-weight:800;color:${sevColor(a.overall_severity)};">${a.overall_severity}/100</div>
+        </div>
+        <div style="text-align:center;min-width:70px;">
+          <div style="font-size:0.65rem;color:#888;font-weight:700;">DPD</div>
+          <div style="font-size:1.1rem;font-weight:800;color:${a.dpd!=null?(a.dpd>0.1?'#e74c3c':'#27ae60'):'#999'};">${a.dpd != null ? a.dpd.toFixed(4) : '—'}</div>
+        </div>
+        <div style="text-align:center;min-width:70px;">
+          <div style="font-size:0.65rem;color:#888;font-weight:700;">LABEL</div>
+          <div style="font-size:0.8rem;font-weight:700;color:${sevColor(a.overall_severity)};">${a.severity_label || '—'}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+loadDemoDatasets();
+</script>
+</body>
+</html>
